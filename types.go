@@ -8,8 +8,14 @@ type Definition struct {
 	Examples   []string `json:"examples"`
 }
 
+type Variation struct {
+	Definitions []*Definition `json:"definitions"`
+	Variation   string        `json:"variation"`
+}
+
 type Entry struct {
 	Word        string        `json:"word"`
 	Etymology   string        `json:"etylmology"`
 	Definitions []*Definition `json:"definitions"`
+	Variations  []*Variation  `json:"variations"`
 }
