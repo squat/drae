@@ -3,7 +3,7 @@ A RESTful API for el Diccionario de la Real Academia Española
 
 ##Instalation
 ````sh
-$ go install github.com/lsvx/drae
+$ go get github.com/lsvx/drae
 ````
 
 ##Usage
