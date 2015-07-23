@@ -7,8 +7,12 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-func Scrape(word string) *Entry {
-	r1, err := http.Get("http://lema.rae.es/drae/srv/search?val=" + word)
+func ScrapeWord(word string) *Entry {
+	return Scrape("http://lema.rae.es/drae/srv/search?val="+Escape(word), word)
+}
+
+func Scrape(url string, word string) *Entry {
+	r1, err := http.Get(url)
 
 	if err != nil {
 		panic(err)
@@ -23,6 +27,10 @@ func Scrape(word string) *Entry {
 	}
 
 	nodes := doc.Find("body").Children().Filter("div")
+	if nodes.Length() == 0 {
+		url, _ = doc.Find("a").First().Attr("href")
+		return Scrape("http://lema.rae.es/drae/srv/"+url, word)
+	}
 	etymology := strings.TrimSpace(nodes.First().Find("span.a").Text())
 	defs := []*Definition{}
 	vars := []*Variation{}

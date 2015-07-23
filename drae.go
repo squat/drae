@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strings"
 )
 
 func main() {
@@ -40,7 +39,7 @@ func api(port int) {
 
 func respond(writer io.Writer, word string) *Entry {
 	enc := json.NewEncoder(writer)
-	response := Scrape(strings.ToLower(word))
+	response := ScrapeWord(Sanitize(word))
 
 	enc.Encode(response)
 	return response
