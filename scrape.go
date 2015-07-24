@@ -86,15 +86,13 @@ func Scrape(url string, word string) *Entry {
 func ScrapeDefinition(s *goquery.Selection) *Definition {
 	category, _ := s.Find("span[title]").First().Attr("title")
 
-	def := &Definition{
+	return &Definition{
 		Category:   category,
 		Definition: strings.TrimSpace(s.Find("span.b").Clone().Children().Not("a").Remove().End().End().Text()),
 		Origin:     ScrapeOrigins(s),
 		Notes:      ScrapeNotes(s),
 		Examples:   ScrapeExamples(s),
 	}
-
-	return def
 }
 
 func ScrapeOrigins(s *goquery.Selection) []string {
