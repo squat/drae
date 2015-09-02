@@ -44,11 +44,15 @@ func Scrape(url string, word string) *Entry {
 	defs := []*Definition{}
 	vars := []*Variation{}
 
-	nodes.Each(func(i int, s *goquery.Selection) {
+	nodes.Each(func(k int, s *goquery.Selection) {
 		delimiter := s.Children().Filter("p:not([class])").First()
 		delimiter.NextAll().EachWithBreak(func(i int, s *goquery.Selection) bool {
 			//Skip empty P tags.
 			if s.Children().Length() == 0 {
+				return true
+			}
+			//Skip morgologies.
+			if s.Has("a[title='MORFOLOGÍA.']").Length() > 0 {
 				return true
 			}
 			//Break when the first variation is reached
@@ -62,6 +66,7 @@ func Scrape(url string, word string) *Entry {
 		delimiters := s.Find(".p span.k").Parent()
 		delimiters.Each(func(i int, v *goquery.Selection) {
 			vars = append(vars, &Variation{Variation: strings.TrimSpace(v.Text())})
+			i = len(vars) - 1
 			v.NextAll().EachWithBreak(func(j int, s *goquery.Selection) bool {
 				//Done with this variation.
 				if s.HasClass("p") {
