@@ -45,13 +45,13 @@ func Scrape(url string, word string) *Entry {
 	vars := []*Variation{}
 
 	nodes.Each(func(k int, s *goquery.Selection) {
-		delimiter := s.Children().Filter("p:not([class])").First()
+		delimiter := s.Children().Filter("p:not([class])").Eq(1)
 		delimiter.NextAll().EachWithBreak(func(i int, s *goquery.Selection) bool {
 			//Skip empty P tags.
 			if s.Children().Length() == 0 {
 				return true
 			}
-			//Skip morgologies.
+			//Skip morfologies.
 			if s.Has("a[title='MORFOLOGÍA.']").Length() > 0 {
 				return true
 			}
