@@ -87,7 +87,7 @@ func Solve(res *http.Response) *http.Response {
 
 	fields := make([]string, len(names))
 
-	for i, _ := range fields {
+	for i := range fields {
 		fields[i] = url.QueryEscape(names[i][1]) + "=" + url.QueryEscape(values[i][1])
 	}
 

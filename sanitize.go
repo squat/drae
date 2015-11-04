@@ -7,7 +7,7 @@ import (
 	"unicode/utf8"
 )
 
-var Characters = []string{"á", "é", "í", "ó", "ú", "ü", "ñ"}
+const characters string = "áéíóúüñ"
 
 func Sanitize(s string) string {
 	s, _ = url.QueryUnescape(s)
@@ -17,9 +17,11 @@ func Sanitize(s string) string {
 
 //Escape converts special characters to hexadecimal representations of their Unicode code points. This is the format that DRAE expects rather than simple URL escaped characters.
 func Escape(s string) string {
-	for _, c := range Characters {
-		r, _ := utf8.DecodeRuneInString(c)
+	for i, w := 0, 0; i < len(characters); i += w {
+		r, width := utf8.DecodeRuneInString(characters[i:])
+		c := characters[i : i+width]
 		s = strings.Replace(s, c, "%"+strconv.FormatInt(int64(r), 16), -1)
+		w = width
 	}
 	return s
 }
