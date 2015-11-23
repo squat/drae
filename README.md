@@ -1,7 +1,7 @@
 #Drae
 A RESTful API for el Diccionario de la Real Academia Española
 
-##Instalation
+##Installation
 ````sh
 $ go get github.com/lsvx/drae
 ````
@@ -25,4 +25,4 @@ You can now open a browser and query the API at `http://localhost:6969/api/`.
 
 ###Endpoints
 ####`/api/<word>`
- The API has only one endpoint: `/api/<word>`. For example, I could search for the definition of `gato` at `http://localhost:6969/api/gato`.
+ The API has only one endpoint: `/api/<word>`. For example, I could search for the definition of `gato` at `http://localhost:4000/api/gato`.
