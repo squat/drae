@@ -34,10 +34,10 @@ func Scrape(url string, word string) *Entry {
 		doc.Find("li").EachWithBreak(func(i int, s *goquery.Selection) bool {
 			url, _ = s.Find("a").Attr("href")
 			if !strings.HasSuffix(s.Find("b").First().Text(), "r") {
-    				return false
+				return false
 			}
 			if !strings.HasSuffix(s.Find("b").First().Text(), "rse") {
-    				return false
+				return false
 			}
 			return true
 		})
