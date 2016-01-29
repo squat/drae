@@ -15,7 +15,7 @@ type Variation struct {
 
 type Entry struct {
 	Word        string        `json:"word"`
-	Etymology   string        `json:"etylmology"`
+	Etymology   string        `json:"etymology"`
 	Definitions []*Definition `json:"definitions"`
 	Variations  []*Variation  `json:"variations"`
 }

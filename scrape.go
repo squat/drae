@@ -7,96 +7,91 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-func ScrapeWord(word string) *Entry {
-	return Scrape("http://lema.rae.es/drae/srv/search?val="+Escape(word), word)
+func ScrapeWord(word string) []*Entry {
+	return Scrape("http://dle.rae.es/srv/search?w="+word, word)
 }
 
-func Scrape(url string, word string) *Entry {
-	r1, err := http.Get(url)
+func Scrape(url string, word string) []*Entry {
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Set("User-Agent", "")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 
 	if err != nil {
 		panic(err)
 	}
 
-	r2 := Solve(r1)
-	defer r2.Body.Close()
-
-	doc, err := goquery.NewDocumentFromResponse(r2)
+	defer resp.Body.Close()
+	doc, err := goquery.NewDocumentFromResponse(resp)
 	if err != nil {
 		panic(err)
 	}
 
-	//Look for definitions.
-	nodes := doc.Find("body").Children().Filter("div")
-	//If no definitions were found, there is probably a list of links to definitions.
+	//Look for entries.
+	nodes := doc.Find("article")
+	//If no entries were found, there is probably a list of links to definitions.
 	if nodes.Length() == 0 {
 		//Choose the link for the word that is not a verb.
 		doc.Find("li").EachWithBreak(func(i int, s *goquery.Selection) bool {
 			url, _ = s.Find("a").Attr("href")
-			if !strings.HasSuffix(s.Find("b").First().Text(), "r") {
+			if !strings.HasSuffix(s.Text(), "r.") {
 				return false
 			}
-			if !strings.HasSuffix(s.Find("b").First().Text(), "rse") {
+			if !strings.HasSuffix(s.Text(), "rse.") {
 				return false
 			}
 			return true
 		})
-		return Scrape("http://lema.rae.es/drae/srv/"+url, word)
+		return Scrape("http://dle.rae.es/srv/"+url, word)
 	}
-	etymology := strings.TrimSpace(nodes.First().Find("span.a").Text())
-	defs := []*Definition{}
-	vars := []*Variation{}
 
+	entries := []*Entry{}
 	nodes.Each(func(k int, s *goquery.Selection) {
-		delimiter := s.Children().Filter("p:not([class])").Eq(1)
-		delimiter.NextAll().EachWithBreak(func(i int, s *goquery.Selection) bool {
-			//Skip empty P tags.
-			if s.Children().Length() == 0 {
-				return true
-			}
-			//Skip morfologies.
-			if s.Has("a[title='MORFOLOGÍA.']").Length() > 0 {
-				return true
-			}
-			//Break when the first variation is reached
-			if s.HasClass("p") {
-				return false
-			}
+		etymology := s.Find("p.n2").Text()
+		defs := []*Definition{}
+		vars := []*Variation{}
+
+		s.Find("p[class^='j']").Each(func(i int, s *goquery.Selection) {
 			defs = append(defs, ScrapeDefinition(s))
-			return true
 		})
 
-		delimiters := s.Find(".p span.k").Parent()
-		delimiters.Each(func(i int, v *goquery.Selection) {
-			vars = append(vars, &Variation{Variation: strings.TrimSpace(v.Text())})
-			i = len(vars) - 1
-			v.NextAll().EachWithBreak(func(j int, s *goquery.Selection) bool {
-				//Done with this variation.
-				if s.HasClass("p") {
+		s.Find("p[class^='k']").Each(func(i int, s *goquery.Selection) {
+			vars = append(vars, &Variation{Variation: s.Text()})
+
+			s.NextAll().EachWithBreak(func(_ int, s *goquery.Selection) bool {
+				class, _ := s.Attr("class")
+				if strings.HasPrefix(class, "l") {
+					vars[i].Definitions = append(vars[i].Definitions, &Definition{Definition: s.Text()})
+					return false
+				}
+				if class != "m" {
 					return false
 				}
 				vars[i].Definitions = append(vars[i].Definitions, ScrapeDefinition(s))
 				return true
 			})
 		})
+
+		entry := &Entry{
+			Word:        word,
+			Etymology:   etymology,
+			Definitions: defs,
+			Variations:  vars,
+		}
+
+		entries = append(entries, entry)
 	})
 
-	entry := &Entry{
-		Word:        word,
-		Etymology:   etymology,
-		Definitions: defs,
-		Variations:  vars,
-	}
-
-	return entry
+	return entries
 }
 
 func ScrapeDefinition(s *goquery.Selection) *Definition {
-	category, _ := s.Find("span[title]").First().Attr("title")
+	category, _ := s.Find("abbr.g").First().Attr("title")
 
 	return &Definition{
 		Category:   category,
-		Definition: strings.TrimSpace(s.Find("span.b").Clone().Children().Not("a").Remove().End().End().Text()),
+		Definition: JoinNodesWithSpace(s.Children().First().NextAll().Not("abbr").Not("span.h")),
 		Origin:     ScrapeOrigins(s),
 		Notes:      ScrapeNotes(s),
 		Examples:   ScrapeExamples(s),
@@ -105,7 +100,7 @@ func ScrapeDefinition(s *goquery.Selection) *Definition {
 
 func ScrapeOrigins(s *goquery.Selection) []string {
 	origins := []string{}
-	s.Find("span.d i span.d[title]").Each(func(i int, s *goquery.Selection) {
+	s.Find("abbr.c").Each(func(i int, s *goquery.Selection) {
 		origin, _ := s.Attr("title")
 		origins = append(origins, origin)
 	})
@@ -114,7 +109,7 @@ func ScrapeOrigins(s *goquery.Selection) []string {
 
 func ScrapeNotes(s *goquery.Selection) []string {
 	notes := []string{}
-	s.Clone().Find("span[title]").First().Remove().End().End().Find("span.d i span.d[title]").Remove().End().Find("span.d[title]").Each(func(i int, s *goquery.Selection) {
+	s.Find("abbr.d").Each(func(i int, s *goquery.Selection) {
 		note, _ := s.Attr("title")
 		notes = append(notes, note)
 	})
@@ -123,8 +118,16 @@ func ScrapeNotes(s *goquery.Selection) []string {
 
 func ScrapeExamples(s *goquery.Selection) []string {
 	examples := []string{}
-	s.Find("span.h i").Each(func(i int, s *goquery.Selection) {
+	s.Find("span.h").Each(func(i int, s *goquery.Selection) {
 		examples = append(examples, s.Text())
 	})
 	return examples
+}
+
+func JoinNodesWithSpace(s *goquery.Selection) string {
+	texts := []string{}
+	s.Each(func(i int, s *goquery.Selection) {
+		texts = append(texts, s.Text())
+	})
+	return strings.Join(texts, " ")
 }

@@ -37,7 +37,7 @@ func api(port int) {
 	http.ListenAndServe(fmt.Sprintf(":%v", port), nil)
 }
 
-func respond(writer io.Writer, word string) *Entry {
+func respond(writer io.Writer, word string) []*Entry {
 	enc := json.NewEncoder(writer)
 	response := ScrapeWord(Sanitize(word))
 
