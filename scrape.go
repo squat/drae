@@ -35,13 +35,15 @@ func Scrape(url string, word string) []*Entry {
 		//Choose the link for the word that is not a verb.
 		doc.Find("li").EachWithBreak(func(i int, s *goquery.Selection) bool {
 			url, _ = s.Find("a").Attr("href")
-			if !strings.HasSuffix(s.Text(), "r.") {
-				return false
+			t := strings.TrimSpace(s.Text())
+			t = t[:len(t)-1]
+			if strings.HasSuffix(t, "r") {
+				return true
 			}
-			if !strings.HasSuffix(s.Text(), "rse.") {
-				return false
+			if strings.HasSuffix(t, "rse") {
+				return true
 			}
-			return true
+			return false
 		})
 		return Scrape("http://dle.rae.es/srv/"+url, word)
 	}
