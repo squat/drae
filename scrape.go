@@ -89,7 +89,7 @@ func Scrape(url string, word string) []*Entry {
 }
 
 func ScrapeDefinition(s *goquery.Selection) *Definition {
-	category, _ := s.Find("abbr.g").First().Attr("title")
+	category, _ := s.Find("abbr").First().Attr("title")
 
 	return &Definition{
 		Category:   category,
@@ -111,7 +111,7 @@ func ScrapeOrigins(s *goquery.Selection) []string {
 
 func ScrapeNotes(s *goquery.Selection) []string {
 	notes := []string{}
-	s.Find("abbr.d").Each(func(i int, s *goquery.Selection) {
+	s.Find("abbr").Not("abbr:first-of-type").Not("abbr.c").Each(func(i int, s *goquery.Selection) {
 		note, _ := s.Attr("title")
 		notes = append(notes, note)
 	})
