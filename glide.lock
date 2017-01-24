@@ -1,0 +1,21 @@
+hash: 35b592583d2f881f18cefd045fd74a5ac19effadae39b8481fe392612c46e53d
+updated: 2017-01-24T11:48:02.044569615-08:00
+imports:
+- name: github.com/andybalholm/cascadia
+  version: 349dd0209470eabd9514242c688c403c0926d266
+- name: github.com/PuerkitoBio/goquery
+  version: 3cb3b8656883c2cc3deb9c643d93ea6e5157e425
+- name: github.com/Sirupsen/logrus
+  version: 61e43dc76f7ee59a82bdf3d71033dc12bea4c77d
+- name: github.com/spf13/pflag
+  version: a232f6d9f87afaaa08bafaff5da685f974b83313
+- name: golang.org/x/net
+  version: 45e771701b814666a7eb299e6c7a57d0b1799e91
+  subpackages:
+  - html
+  - html/atom
+- name: golang.org/x/sys
+  version: d75a52659825e75fff6158388dddc6a5b04f9ba5
+  subpackages:
+  - unix
+testImports: []

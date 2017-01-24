@@ -1,0 +1,5 @@
+package: github.com/squat/drae
+import:
+- package: github.com/PuerkitoBio/goquery
+- package: github.com/Sirupsen/logrus
+- package: github.com/spf13/pflag
