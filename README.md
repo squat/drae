@@ -1,6 +1,7 @@
 #Drae
 A RESTful API for el Diccionario de la Real Academia Española
 
+[![Build Status](https://travis-ci.org/squat/drae.svg?branch=master)](https://travis-ci.org/squat/drae) [![Go Report Card](https://goreportcard.com/badge/github.com/squat/drae)] (https://goreportcard.com/report/github.com/squat/drae) [![](https://images.microbadger.com/badges/image/squat/drae.svg)](https://microbadger.com/images/squat/drae)
 ##Installation
 ````sh
 $ go get github.com/squat/drae
