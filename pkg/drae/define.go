@@ -11,6 +11,8 @@ import (
 
 const raeAPI = "http://dle.rae.es/srv/"
 
+// NotFoundError is a special error type that is returned when the word
+// could not be found in the API.
 type NotFoundError struct {
 	err error
 }
