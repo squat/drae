@@ -28,5 +28,5 @@ You can now open a browser and query the API at `http://localhost:6969/api/`.
 ####`/api/<word>`
  The API has only one endpoint: `/api/<word>`. For example, I could search for the definition of `gato` at `http://localhost:4000/api/gato`.
  
- ####`/healthz`
+####`/healthz`
  The `/healthz` endpoint returns a 200 if the API is running.
