@@ -12,14 +12,8 @@ import (
 	"strings"
 )
 
-func solve(res *http.Response) (*http.Response, error) {
-	defer res.Body.Close()
-	buffer, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read request body: %v", err)
-	}
-
-	contents := string(buffer)
+func solve(body []byte) ([]byte, error) {
+	contents := string(body)
 
 	tableRe := regexp.MustCompile(`table = "(.*?)"`)
 	table := tableRe.FindStringSubmatch(contents)[1]
@@ -118,5 +112,6 @@ func solve(res *http.Response) (*http.Response, error) {
 		return nil, fmt.Errorf("failed to send challenge request: %v", err)
 	}
 
-	return resp, nil
+	defer resp.Body.Close()
+	return ioutil.ReadAll(resp.Body)
 }

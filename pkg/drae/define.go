@@ -1,9 +1,12 @@
 package drae
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -44,19 +47,27 @@ func scrape(url string, word string) ([]*Entry, error) {
 	}
 	req.Header.Set("User-Agent", "")
 	client := &http.Client{}
-	r1, err := client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make request to rae: %v", err)
 	}
 
-	// We need to do some work to get an actual response.
-	r2, err := solve(r1)
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to solve challenge: %v", err)
+		return nil, fmt.Errorf("failed to read response body: %v", err)
 	}
-	defer r2.Body.Close()
 
-	doc, err := goquery.NewDocumentFromResponse(r2)
+	solveRe := regexp.MustCompile("Please enable JavaScript to view the page content.")
+	if solveRe.Match(body) {
+		// We need to do some work to get an actual response.
+		body, err = solve(body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to solve challenge: %v", err)
+		}
+	}
+
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse response from rae: %v", err)
 	}

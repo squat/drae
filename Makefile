@@ -66,7 +66,7 @@ push-latest: container-latest
 push-name:
 	@echo "pushed: $(IMAGE):$(VERSION)"
 
-clean: container-clean bin-clean static-clean
+clean: container-clean bin-clean
 
 container-clean:
 	rm -rf .container-* .push-*

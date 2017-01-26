@@ -43,7 +43,6 @@ func encode(writer io.Writer, word string) error {
 	enc := json.NewEncoder(writer)
 	response, err := drae.Define(word)
 	if err != nil {
-		fmt.Println(word)
 		return err
 	}
 
