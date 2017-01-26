@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -84,43 +85,49 @@ func scrape(url string, word string) ([]*Entry, error) {
 		return scrape(raeAPI+url, word)
 	}
 
-	entries := []*Entry{}
+	var wg sync.WaitGroup
+	wg.Add(nodes.Length())
+	entries := make([]*Entry, nodes.Length())
 	nodes.Each(func(k int, s *goquery.Selection) {
-		etymology := s.Find("p.n2").Text()
-		defs := []*Definition{}
-		vars := []*Variation{}
+		// Parallelize generating entries.
+		go func(k int, s *goquery.Selection) {
+			etymology := s.Find("p.n2").Text()
+			var defs []*Definition
+			var vars []*Variation
 
-		s.Find("p[class^='j']").Each(func(i int, s *goquery.Selection) {
-			defs = append(defs, scrapeDefinition(s))
-		})
-
-		s.Find("p[class^='k']").Each(func(i int, s *goquery.Selection) {
-			vars = append(vars, &Variation{Variation: s.Text()})
-
-			s.NextAll().EachWithBreak(func(_ int, s *goquery.Selection) bool {
-				class, _ := s.Attr("class")
-				if strings.HasPrefix(class, "l") {
-					vars[i].Definitions = append(vars[i].Definitions, &Definition{Definition: s.Text()})
-					return false
-				}
-				if class != "m" {
-					return false
-				}
-				vars[i].Definitions = append(vars[i].Definitions, scrapeDefinition(s))
-				return true
+			s.Find("p[class^='j']").Each(func(i int, s *goquery.Selection) {
+				defs = append(defs, scrapeDefinition(s))
 			})
-		})
 
-		entry := &Entry{
-			Word:        word,
-			Etymology:   etymology,
-			Definitions: defs,
-			Variations:  vars,
-		}
+			s.Find("p[class^='k']").Each(func(i int, s *goquery.Selection) {
+				vars = append(vars, &Variation{Variation: s.Text()})
 
-		entries = append(entries, entry)
+				s.NextAll().EachWithBreak(func(_ int, s *goquery.Selection) bool {
+					class, _ := s.Attr("class")
+					if strings.HasPrefix(class, "l") {
+						vars[i].Definitions = append(vars[i].Definitions, &Definition{Definition: s.Text()})
+						return false
+					}
+					if class != "m" {
+						return false
+					}
+					vars[i].Definitions = append(vars[i].Definitions, scrapeDefinition(s))
+					return true
+				})
+			})
+
+			// Insert directly into entries vs using a channel to guarantee order.
+			entries[k] = &Entry{
+				Word:        word,
+				Etymology:   etymology,
+				Definitions: defs,
+				Variations:  vars,
+			}
+			wg.Done()
+		}(k, s)
 	})
 
+	wg.Wait()
 	return entries, nil
 }
 
@@ -158,7 +165,7 @@ func scrapeDefinition(s *goquery.Selection) *Definition {
 }
 
 func scrapeOrigins(s *goquery.Selection) []string {
-	origins := []string{}
+	var origins []string
 	s.Find("abbr.c").Each(func(i int, s *goquery.Selection) {
 		origin, _ := s.Attr("title")
 		origins = append(origins, origin)
@@ -167,7 +174,7 @@ func scrapeOrigins(s *goquery.Selection) []string {
 }
 
 func scrapeNotes(s *goquery.Selection) []string {
-	notes := []string{}
+	var notes []string
 	s.Find("abbr").Not("abbr:first-of-type").Not("abbr.c").Each(func(i int, s *goquery.Selection) {
 		note, _ := s.Attr("title")
 		notes = append(notes, note)
@@ -176,7 +183,7 @@ func scrapeNotes(s *goquery.Selection) []string {
 }
 
 func scrapeExamples(s *goquery.Selection) []string {
-	examples := []string{}
+	var examples []string
 	s.Find("span.h").Each(func(i int, s *goquery.Selection) {
 		examples = append(examples, s.Text())
 	})
@@ -184,7 +191,7 @@ func scrapeExamples(s *goquery.Selection) []string {
 }
 
 func joinNodesWithSpace(s *goquery.Selection) string {
-	texts := []string{}
+	var texts []string
 	s.Each(func(i int, s *goquery.Selection) {
 		texts = append(texts, s.Text())
 	})
