@@ -35,7 +35,7 @@ func Define(word string) ([]*Entry, error) {
 	return scrape(raeAPI+"search?w="+word, word)
 }
 
-// Scrape takes a URL corresponding to a resource on RAE and returns a slice of
+// scrape takes a URL corresponding to a resource on RAE and returns a slice of
 // Entry's.
 func scrape(url string, word string) ([]*Entry, error) {
 	if word == "" {
