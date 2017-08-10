@@ -92,8 +92,8 @@ func scrape(url string, word string) ([]*Entry, error) {
 		// Parallelize generating entries.
 		go func(k int, s *goquery.Selection) {
 			etymology := s.Find("p.n2").Text()
-			var defs []*Definition
-			var vars []*Variation
+			defs := make([]*Definition, 0)
+			vars := make([]*Variation, 0)
 
 			s.Find("p[class^='j']").Each(func(i int, s *goquery.Selection) {
 				defs = append(defs, scrapeDefinition(s))
@@ -165,7 +165,7 @@ func scrapeDefinition(s *goquery.Selection) *Definition {
 }
 
 func scrapeOrigins(s *goquery.Selection) []string {
-	var origins []string
+	origins := make([]string, 0)
 	s.Find("abbr.c").Each(func(i int, s *goquery.Selection) {
 		origin, _ := s.Attr("title")
 		origins = append(origins, origin)
@@ -174,7 +174,7 @@ func scrapeOrigins(s *goquery.Selection) []string {
 }
 
 func scrapeNotes(s *goquery.Selection) []string {
-	var notes []string
+	notes := make([]string, 0)
 	s.Find("abbr").Not("abbr:first-of-type").Not("abbr.c").Each(func(i int, s *goquery.Selection) {
 		note, _ := s.Attr("title")
 		notes = append(notes, note)
@@ -183,7 +183,7 @@ func scrapeNotes(s *goquery.Selection) []string {
 }
 
 func scrapeExamples(s *goquery.Selection) []string {
-	var examples []string
+	examples := make([]string, 0)
 	s.Find("span.h").Each(func(i int, s *goquery.Selection) {
 		examples = append(examples, s.Text())
 	})
