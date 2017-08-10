@@ -17,7 +17,7 @@ DIRTY := $(shell test -z "$$(git diff --shortstat 2>/dev/null)" || echo -dirty)
 VERSION := $(VERSION)$(DIRTY)
 LD_FLAGS := -ldflags \"-X $(PROJECT)/pkg/version.Version=$(VERSION)\"
 
-BUILD_IMAGE ?= golang:1.7-alpine
+BUILD_IMAGE ?= golang:1.8.3-alpine
 
 all: build
 

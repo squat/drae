@@ -6,10 +6,10 @@ services:
   - docker
 
 go:
-  - 1.7.x
+  - 1.8.3
   - master
   - tip
 
 after_success:
   - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-  - go version | grep -q go1.7 && make push && make push-latest
+  - go version | grep -q go1.8.3 && make push && make push-latest
