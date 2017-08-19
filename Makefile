@@ -1,9 +1,10 @@
 .PHONY: all push container clean container-name container-latest push-latest 
 
 BIN := drae
-PROJECT := github.com/squat/$(BIN)
+PROJECT := drae
+REPO := github.com/squat/$(PROJECT)
 REGISTRY ?= index.docker.io
-IMAGE ?= squat/$(BIN)
+IMAGE ?= squat/$(PROJECT)
 
 TAG := $(shell git describe --abbrev=0 --tags HEAD 2>/dev/null)
 COMMIT := $(shell git rev-parse HEAD)
@@ -15,7 +16,7 @@ ifneq ($(TAG),)
 endif
 DIRTY := $(shell test -z "$$(git diff --shortstat 2>/dev/null)" || echo -dirty)
 VERSION := $(VERSION)$(DIRTY)
-LD_FLAGS := -ldflags \"-X $(PROJECT)/pkg/version.Version=$(VERSION)\"
+LD_FLAGS := -ldflags \"-X $(REPO)/pkg/version.Version=$(VERSION)\"
 
 BUILD_IMAGE ?= golang:1.8.3-alpine
 
@@ -30,16 +31,16 @@ bin/$(BIN): bin cmd/$(BIN)/main.go glide.yaml
 	@echo "building: $@"
 	@docker run \
 	    -u $$(id -u):$$(id -g) \
-	    -v $$(pwd):/go/src/$(PROJECT) \
+	    -v $$(pwd):/go/src/$(REPO) \
 	    -v $$(pwd)/bin:/go/bin \
-	    -w /go/src/$(PROJECT) \
+	    -w /go/src/$(REPO) \
 	    $(BUILD_IMAGE) \
 	    /bin/sh -c " \
 	        GOOS=linux \
 		CGO_ENABLED=0 \
 		go build -o bin/$(BIN) \
 		    $(LD_FLAGS) \
-		    ./cmd/drae/... \
+		    ./cmd/$(BIN)/... \
 	    "
 
 container: .container-$(VERSION) container-name
