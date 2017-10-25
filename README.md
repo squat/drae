@@ -13,7 +13,7 @@ $ docker run -p 4000:4000 squat/drae
 or if you wish to install drae locally:
 
 ```sh
-$ go get github.com/squat/drae
+$ go get -u github.com/squat/drae/cmd/drae
 ```
 
 ## Usage

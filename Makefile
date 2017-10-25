@@ -18,7 +18,7 @@ DIRTY := $(shell test -z "$$(git diff --shortstat 2>/dev/null)" || echo -dirty)
 VERSION := $(VERSION)$(DIRTY)
 LD_FLAGS := -ldflags \"-X $(REPO)/pkg/version.Version=$(VERSION)\"
 
-BUILD_IMAGE ?= golang:1.8.3-alpine
+BUILD_IMAGE ?= golang:1.9.1-alpine
 
 all: build
 
@@ -29,7 +29,7 @@ bin:
 
 bin/$(BIN): bin cmd/$(BIN)/main.go glide.yaml
 	@echo "building: $@"
-	@docker run \
+	@docker run --rm \
 	    -u $$(id -u):$$(id -g) \
 	    -v $$(pwd):/go/src/$(REPO) \
 	    -v $$(pwd)/bin:/go/bin \
