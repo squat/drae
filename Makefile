@@ -17,6 +17,7 @@ endif
 DIRTY := $(shell test -z "$$(git diff --shortstat 2>/dev/null)" || echo -dirty)
 VERSION := $(VERSION)$(DIRTY)
 LD_FLAGS := -ldflags \"-X $(REPO)/pkg/version.Version=$(VERSION)\"
+SRC := $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 
 BUILD_IMAGE ?= golang:1.9.1-alpine
 
@@ -27,7 +28,7 @@ build: bin/$(BIN)
 bin:
 	@mkdir -p bin
 
-bin/$(BIN): bin cmd/$(BIN)/main.go glide.yaml
+bin/$(BIN): bin $(SRC) glide.yaml
 	@echo "building: $@"
 	@docker run --rm \
 	    -u $$(id -u):$$(id -g) \
