@@ -105,8 +105,14 @@ func scrape(url string, word string) ([]*Entry, error) {
 				s.NextAll().EachWithBreak(func(_ int, s *goquery.Selection) bool {
 					class, _ := s.Attr("class")
 					if strings.HasPrefix(class, "l") {
-						vars[i].Definitions = append(vars[i].Definitions, &Definition{Definition: s.Text()})
-						return false
+						d := &Definition{
+							Definition: s.Text(),
+							Origin:     []string{},
+							Notes:      []string{},
+							Examples:   []string{},
+						}
+						vars[i].Definitions = append(vars[i].Definitions, d)
+						return true
 					}
 					if class != "m" {
 						return false
