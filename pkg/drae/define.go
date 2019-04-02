@@ -13,7 +13,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-const raeAPI = "http://dle.rae.es/srv/"
+const raeAPI = "https://dle.rae.es/srv/"
 
 // NotFoundError is a special error type that is returned when the word
 // could not be found in the API.
